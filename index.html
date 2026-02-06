@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssistant - Gestion Simple pour Professionnels</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="logo">
+                <i class="fas fa-hands-helping"></i>
+                <span>ProAssistant</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" data-page="dashboard" class="nav-link active"><i class="fas fa-chart-line"></i> Tableau de bord</a></li>
+                <li><a href="#" data-page="calendar" class="nav-link"><i class="fas fa-calendar-alt"></i> Planning</a></li>
+                <li><a href="#" data-page="clients" class="nav-link"><i class="fas fa-users"></i> Clients</a></li>
+                <li><a href="#" data-page="invoices" class="nav-link"><i class="fas fa-file-invoice"></i> Facturation</a></li>
+                <li><a href="#" data-page="history" class="nav-link"><i class="fas fa-history"></i> Historique</a></li>
+                <li><a href="#" data-page="settings" class="nav-link"><i class="fas fa-cog"></i> Paramètres</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <p class="version">ProAssistant v1.0</p>
+                <p class="tagline">100% Gratuit</p>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search" placeholder="Rechercher...">
+                </div>
+                <div class="top-bar-right">
+                    <button id="notif-btn" class="notif-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notif-badge" id="notif-badge">0</span>
+                    </button>
+                    <div class="user-menu">
+                        <img src="https://ui-avatars.com/api/?name=Pro&background=6366f1&color=fff" alt="User">
+                        <span id="user-name">Professionnel</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pages Container -->
+            <div class="pages-container">
+                <!-- Dashboard Page -->
+                <div id="dashboard" class="page active">
+                    <div class="page-header">
+                        <h1>Tableau de bord</h1>
+                        <p>Vue d'ensemble de votre activité</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon hours">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Heures ce mois</h3>
+                                <p class="stat-value" id="monthly-hours">0h</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon revenue">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Montant dû</h3>
+                                <p class="stat-value" id="amount-due">0€</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon clients">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Clients actifs</h3>
+                                <p class="stat-value" id="active-clients">0</p>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-icon delayed">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>En retard</h3>
+                                <p class="stat-value" id="delayed-payments">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Actions rapides</h2>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="action-btn primary" onclick="app.openModal('add-intervention')">
+                                <i class="fas fa-plus"></i> Ajouter une intervention
+                            </button>
+                            <button class="action-btn" onclick="app.openModal('add-client')">
+                                <i class="fas fa-user-plus"></i> Ajouter un client
+                            </button>
+                            <button class="action-btn" onclick="app.sendReminders()">
+                                <i class="fas fa-message"></i> Envoyer rappels
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interventions à venir -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Prochaines interventions</h2>
+                            <a href="#" data-page="calendar" class="link-btn">Voir tout →</a>
+                        </div>
+                        <div class="interventions-preview" id="interventions-preview">
+                            <p class="empty-state">Aucune intervention programmée</p>
+                        </div>
+                    </div>
+
+                    <!-- Clients en retard -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Clients en retard de paiement</h2>
+                            <a href="#" data-page="invoices" class="link-btn">Gérer →</a>
+                        </div>
+                        <div class="delayed-clients" id="delayed-clients">
+                            <p class="empty-state">Aucun client en retard</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Page -->
+                <div id="calendar" class="page">
+                    <div class="page-header">
+                        <h1>Planning</h1>
+                        <button class="btn primary" onclick="app.openModal('add-intervention')">
+                            <i class="fas fa-plus"></i> Ajouter intervention
+                        </button>
+                    </div>
+
+                    <div class="calendar-container">
+                        <div class="calendar-controls">
+                            <button id="prev-month" class="btn-icon"><i class="fas fa-chevron-left"></i></button>
+                            <h2 id="current-month">Février 2026</h2>
+                            <button id="next-month" class="btn-icon"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+
+                        <div class="calendar-view" id="calendar-view">
+                            <!-- Generated by JavaScript -->
+                        </div>
+
+                        <div class="interventions-list">
+                            <h3>Interventions du jour</h3>
+                            <div id="daily-interventions" class="daily-interventions">
+                                <p class="empty-state">Aucune intervention aujourd'hui</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clients Page -->
+                <div id="clients" class="page">
+                    <div class="page-header">
+                        <h1>Gestion des clients</h1>
+                        <button class="btn primary" onclick="app.openModal('add-client')">
+                            <i class="fas fa-user-plus"></i> Ajouter client
+                        </button>
+                    </div>
+
+                    <div class="filters">
+                        <input type="text" id="client-search" class="search-input" placeholder="Rechercher un client...">
+                        <select id="client-filter" class="filter-select">
+                            <option value="">Tous les clients</option>
+                            <option value="active">Actifs</option>
+                            <option value="inactive">Inactifs</option>
+                        </select>
+                    </div>
+
+                    <div class="clients-grid" id="clients-grid">
+                        <p class="empty-state">Aucun client</p>
+                    </div>
+                </div>
+
+                <!-- Invoices Page -->
+                <div id="invoices" class="page">
+                    <div class="page-header">
+                        <h1>Facturation</h1>
+                        <button class="btn primary" onclick="app.openModal('send-invoices')">
+                            <i class="fas fa-envelope"></i> Envoyer factures
+                        </button>
+                    </div>
+
+                    <div class="filters">
+                        <select id="invoice-filter" class="filter-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="paid">Payé</option>
+                            <option value="pending">En attente</option>
+                            <option value="late">En retard</option>
+                        </select>
+                        <input type="month" id="invoice-month" class="filter-select">
+                    </div>
+
+                    <div class="invoices-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Heures</th>
+                                    <th>Montant</th>
+                                    <th>Statut</th>
+                                    <th>Période</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-tbody">
+                                <tr><td colspan="6" class="empty-state">Aucune facture</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- History Page -->
+                <div id="history" class="page">
+                    <div class="page-header">
+                        <h1>Historique des interventions</h1>
+                    </div>
+
+                    <div class="filters">
+                        <input type="date" id="history-from" class="filter-select">
+                        <input type="date" id="history-to" class="filter-select">
+                        <select id="history-client" class="filter-select">
+                            <option value="">Tous les clients</option>
+                        </select>
+                        <button class="btn" onclick="app.filterHistory()">Filtrer</button>
+                    </div>
+
+                    <div class="history-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Client</th>
+                                    <th>Type de prestation</th>
+                                    <th>Heures</th>
+                                    <th>Tarif</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <tr><td colspan="6" class="empty-state">Aucune intervention</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settings" class="page">
+                    <div class="page-header">
+                        <h1>Paramètres</h1>
+                    </div>
+
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h2>Profil personnel</h2>
+                            <div class="form-group">
+                                <label>Nom complet</label>
+                                <input type="text" id="profile-name" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="profile-email" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label>Téléphone</label>
+                                <input type="tel" id="profile-phone" class="form-input">
+                            </div>
+                            <button class="btn primary" onclick="app.saveProfile()">Enregistrer profil</button>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Configuration SMS</h2>
+                            <div class="form-group">
+                                <label>Prestataire SMS (simulation)</label>
+                                <select id="sms-provider" class="form-input">
+                                    <option value="simulation">Simulation (développement)</option>
+                                </select>
+                            </div>
+                            <p class="info-text">Les SMS sont simulés en mode développement</p>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Données</h2>
+                            <button class="btn danger" onclick="app.exportData()">
+                                <i class="fas fa-download"></i> Exporter les données
+                            </button>
+                            <button class="btn" onclick="app.importData()">
+                                <i class="fas fa-upload"></i> Importer les données
+                            </button>
+                            <input type="file" id="import-file" style="display:none;" accept=".json">
+                            <button class="btn danger" onclick="if(confirm('Êtes-vous sûr? Cette action est irréversible.')) app.clearAllData()">
+                                <i class="fas fa-trash"></i> Effacer toutes les données
+                            </button>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>À propos</h2>
+                            <p><strong>ProAssistant</strong> v1.0</p>
+                            <p>100% gratuit, sans frais, sans publicité</p>
+                            <p>Optimisé pour mobile et desktop</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Client Modal -->
+    <div id="add-client" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ajouter un client</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-form" onsubmit="app.addClient(event)">
+                <div class="form-group">
+                    <label>Nom du client *</label>
+                    <input type="text" id="client-name" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Téléphone *</label>
+                        <input type="tel" id="client-phone" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="client-email" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="client-address" class="form-input">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tarif horaire (€) *</label>
+                        <input type="number" id="client-rate" class="form-input" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type de prestation</label>
+                        <select id="client-service-type" class="form-input">
+                            <option value="menage">Ménage</option>
+                            <option value="courses">Courses</option>
+                            <option value="gardiennage">Gardiennage</option>
+                            <option value="accompagnement">Accompagnement</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes internes</label>
+                    <textarea id="client-notes" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="app.closeModal()">Annuler</button>
+                    <button type="submit" class="btn primary">Ajouter client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Intervention Modal -->
+    <div id="add-intervention" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Ajouter une intervention</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-form" onsubmit="app.addIntervention(event)">
+                <div class="form-group">
+                    <label>Client *</label>
+                    <select id="intervention-client" class="form-input" required>
+                        <option value="">Sélectionner un client</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="intervention-date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Heure de début *</label>
+                        <input type="time" id="intervention-start" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Heure de fin *</label>
+                        <input type="time" id="intervention-end" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type de prestation</label>
+                        <select id="intervention-type" class="form-input">
+                            <option value="menage">Ménage</option>
+                            <option value="courses">Courses</option>
+                            <option value="gardiennage">Gardiennage</option>
+                            <option value="accompagnement">Accompagnement</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="intervention-notes" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="app.closeModal()">Annuler</button>
+                    <button type="submit" class="btn primary">Ajouter intervention</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Intervention Modal -->
+    <div id="edit-intervention" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Modifier intervention</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-form" onsubmit="app.updateIntervention(event)">
+                <input type="hidden" id="edit-intervention-id">
+                <div class="form-group">
+                    <label>Client</label>
+                    <input type="text" id="edit-intervention-client" class="form-input" disabled>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="edit-intervention-date" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Heure de début</label>
+                        <input type="time" id="edit-intervention-start" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Heure de fin</label>
+                        <input type="time" id="edit-intervention-end" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type de prestation</label>
+                        <select id="edit-intervention-type" class="form-input">
+                            <option value="menage">Ménage</option>
+                            <option value="courses">Courses</option>
+                            <option value="gardiennage">Gardiennage</option>
+                            <option value="accompagnement">Accompagnement</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="edit-intervention-notes" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="app.closeModal()">Annuler</button>
+                    <button type="submit" class="btn primary">Mettre à jour</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Client Details Modal -->
+    <div id="client-details" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2 id="detail-client-name">Détails du client</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="client-details-content">
+                <div class="details-section">
+                    <h3>Informations personnelles</h3>
+                    <div class="details-grid">
+                        <div>
+                            <label>Téléphone</label>
+                            <p id="detail-phone"></p>
+                        </div>
+                        <div>
+                            <label>Email</label>
+                            <p id="detail-email"></p>
+                        </div>
+                        <div>
+                            <label>Adresse</label>
+                            <p id="detail-address"></p>
+                        </div>
+                        <div>
+                            <label>Tarif horaire</label>
+                            <p id="detail-rate"></p>
+                        </div>
+                        <div>
+                            <label>Type de prestation</label>
+                            <p id="detail-service-type"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-section">
+                    <h3>Notes internes</h3>
+                    <p id="detail-notes"></p>
+                </div>
+
+                <div class="details-section">
+                    <h3>Statistiques</h3>
+                    <div class="stats-mini">
+                        <div>
+                            <label>Heures totales</label>
+                            <p id="detail-total-hours">0h</p>
+                        </div>
+                        <div>
+                            <label>Montant total</label>
+                            <p id="detail-total-amount">0€</p>
+                        </div>
+                        <div>
+                            <label>Dernière intervention</label>
+                            <p id="detail-last-intervention">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn danger" onclick="app.deleteClient(app.currentClientId)">Supprimer client</button>
+                    <button class="btn" onclick="app.editClient(app.currentClientId)">Modifier</button>
+                    <button class="btn primary" onclick="app.closeModal()">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Invoices Modal -->
+    <div id="send-invoices" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Envoyer factures et rappels</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-form" onsubmit="app.processSendInvoices(event)">
+                <div class="form-group">
+                    <label>Période</label>
+                    <input type="month" id="invoice-send-month" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Sélectionner les clients à facturer</label>
+                    <div id="invoice-clients-list" class="checkbox-list">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Les factures et SMS seront envoyés aux clients sélectionnés avec le détail des heures et le montant dû.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="app.closeModal()">Annuler</button>
+                    <button type="submit" class="btn primary">Envoyer factures</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SMS Simulation Modal -->
+    <div id="sms-simulation" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>SMS Envoyé (Simulation)</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="sms-preview">
+                <div class="sms-phone">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span id="sms-to">+33 6 XX XX XX XX</span>
+                </div>
+                <div class="sms-message" id="sms-content">
+                    <!-- Generated by JS -->
+                </div>
+                <div class="sms-timestamp">
+                    <i class="fas fa-clock"></i>
+                    <span id="sms-time">Maintenant</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn primary" onclick="app.closeModal()">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Client Modal -->
+    <div id="edit-client" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Modifier client</h2>
+                <button class="close-btn" onclick="app.closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <form class="modal-form" onsubmit="app.saveClientEdits(event)">
+                <input type="hidden" id="edit-client-id">
+                <div class="form-group">
+                    <label>Nom du client *</label>
+                    <input type="text" id="edit-client-name" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Téléphone *</label>
+                        <input type="tel" id="edit-client-phone" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="edit-client-email" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="edit-client-address" class="form-input">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tarif horaire (€) *</label>
+                        <input type="number" id="edit-client-rate" class="form-input" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Type de prestation</label>
+                        <select id="edit-client-service-type" class="form-input">
+                            <option value="menage">Ménage</option>
+                            <option value="courses">Courses</option>
+                            <option value="gardiennage">Gardiennage</option>
+                            <option value="accompagnement">Accompagnement</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes internes</label>
+                    <textarea id="edit-client-notes" class="form-input" rows="3"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn" onclick="app.closeModal()">Annuler</button>
+                    <button type="submit" class="btn primary">Enregistrer modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="modal-overlay" class="modal-overlay" onclick="app.closeModal()"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

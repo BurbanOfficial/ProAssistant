@@ -1,0 +1,137 @@
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║              🙌 BIENVENUE DANS PROASSISTANT! 🙌               ║
+║                                                                ║
+║         Gestion simplifiée pour professionnels de l'aide       ║
+║                    à la personne et conciergerie              ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+
+🚀 DÉMARRAGE RAPIDE
+═══════════════════════════════════════════════════════════════
+
+1️⃣  LANCER LE SERVEUR
+
+   Sur Mac/Linux:
+   • Double-cliquez sur: demarrer.sh
+   • OU lancez: python3 -m http.server 8000
+
+   Sur Windows:
+   • Double-cliquez sur: demarrer.bat
+   • OU lancez dans le terminal: python -m http.server 8000
+
+2️⃣  OUVRIR L'APPLICATION
+
+   Dans votre navigateur:
+   • http://localhost:8000/accueil.html
+
+
+📱 LES DEUX APPLICATIONS
+═══════════════════════════════════════════════════════════════
+
+   💻 CMS (index.html)
+      → Gestion complète
+      → Clients, planning, factures
+      → À utiliser au bureau
+
+   📱 APP TERRAIN (proassistant.html)
+      → Enregistrement rapide
+      → 2 clics seulement
+      → À utiliser sur le téléphone
+
+
+📚 DOCUMENTATION
+═══════════════════════════════════════════════════════════════
+
+   • GUIDE_DEMARRAGE.md     → Guide complet d'utilisation
+   • README.md              → Documentation générale
+   • NOTES_TECHNIQUES.md    → Pour développeurs
+
+
+✨ FONCTIONNALITÉS PRINCIPALES
+═══════════════════════════════════════════════════════════════
+
+   ✅ Gestion des clients (nom, téléphone, tarif, notes)
+   ✅ Planning interactif avec calendrier
+   ✅ Enregistrement rapide des interventions
+   ✅ Calcul automatique des heures
+   ✅ Facturation avec SMS personnalisés
+   ✅ Suivi des paiements (payé/en attente/en retard)
+   ✅ Générations d'attestations mensuelles
+   ✅ Export/Import des données (JSON)
+   ✅ 100% responsive (desktop/tablette/mobile)
+   ✅ Totalement hors ligne
+
+
+💾 VOS DONNÉES
+═══════════════════════════════════════════════════════════════
+
+   📍 Où? LocalStorage de votre navigateur
+   🔒 Sécurisé? Oui - 100% local, pas de serveur
+   💾 Sauvegarde? Exportez régulièrement en JSON
+   📤 Partage? Impossible accidentellement
+
+
+🎯 CAS D'UTILISATION TYPIQUE
+═══════════════════════════════════════════════════════════════
+
+   LUNDI
+   1. Ouvrir le CMS → Créer des clients
+   
+   MARDI-VENDREDI (terrain)
+   1. Ouvrir l'App Terrain sur son téléphone
+   2. Sélectionner le client
+   3. Entrer le nombre d'heures
+   4. Valider ✓
+   → Les données sont synchronisées automatiquement
+   
+   FIN DE MOIS
+   1. Ouvrir le CMS
+   2. Vérifier l'historique
+   3. Générer les factures
+   4. Envoyer les SMS
+
+
+❓ QUESTIONS FRÉQUENTES
+═══════════════════════════════════════════════════════════════
+
+   Q: Je dois installer quelque chose?
+   A: Non! Juste Python ou Node.js pour le serveur local.
+
+   Q: Ça coûte quelque chose?
+   A: Non! C'est 100% gratuit, sans frais, sans publicité.
+
+   Q: Mes données sont-elles sauvegardées?
+   A: Oui, localement. Exportez-les régulièrement en JSON.
+
+   Q: Je peux utiliser ça en équipe?
+   A: Pas dans cette version. Une personne par installation.
+   
+   Q: Les SMS sont-ils gratuits?
+   A: Mode simulation en développement. À adapter en production.
+
+   Q: Ça fonctionne hors ligne?
+   A: App Terrain oui! CMS aussi (mais données non synchro).
+
+
+📞 SUPPORT
+═══════════════════════════════════════════════════════════════
+
+   • Code source transparent: tout en HTML/CSS/JavaScript
+   • Modifiable à volonté
+   • Commentaires partout pour comprendre
+
+
+🎉 COMMENCER
+═══════════════════════════════════════════════════════════════
+
+   Prêt? Lancez le serveur et ouvrez:
+   → http://localhost:8000/accueil.html
+
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║    ProAssistant v1.0 - Simplifiez votre quotidien! 💪        ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝

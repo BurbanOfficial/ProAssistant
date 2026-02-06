@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssistant - Accueil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 48px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .version {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 12px;
+        }
+
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .app-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        }
+
+        .app-icon {
+            font-size: 48px;
+            color: #6366f1;
+            margin-bottom: 16px;
+        }
+
+        .app-card.terrain .app-icon {
+            color: #10b981;
+        }
+
+        .app-card h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #1f2937;
+        }
+
+        .app-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            flex: 1;
+        }
+
+        .features {
+            text-align: left;
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #374151;
+        }
+
+        .features li {
+            margin-bottom: 8px;
+            list-style: none;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .app-button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .app-card.terrain .app-button {
+            background: #10b981;
+        }
+
+        .app-button:hover {
+            transform: scale(1.05);
+        }
+
+        .file-info {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .file-info h3 {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .file-item {
+            background: #f3f4f6;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #6366f1;
+            font-family: 'Courier New', monospace;
+            color: #374151;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .header p {
+                font-size: 14px;
+            }
+
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo"><i class="fas fa-hands-helping"></i></div>
+            <h1>ProAssistant</h1>
+            <p>Gestion simplifiée pour professionnels de l'aide à la personne</p>
+            <span class="version">v1.0 • 100% Gratuit</span>
+        </div>
+
+        <div class="apps-grid">
+            <!-- CMS Card -->
+            <a href="index.html" class="app-card">
+                <div class="app-icon"><i class="fas fa-chart-line"></i></div>
+                <h2>CMS Complet</h2>
+                <p class="app-description">Gestion complète de votre activité</p>
+                <ul class="features">
+                    <li>👥 Gestion des clients</li>
+                    <li>📅 Planning complet</li>
+                    <li>💰 Facturation & SMS</li>
+                    <li>📊 Statistiques</li>
+                    <li>📤 Export des données</li>
+                </ul>
+                <button class="app-button">
+                    <i class="fas fa-arrow-right"></i> Ouvrir CMS
+                </button>
+            </a>
+
+            <!-- Terrain App Card -->
+            <a href="proassistant.html" class="app-card terrain">
+                <div class="app-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h2>App Terrain</h2>
+                <p class="app-description">Enregistrement rapide en déplacement</p>
+                <ul class="features">
+                    <li>⚡ 2 clics seulement</li>
+                    <li>📱 Mobile-first</li>
+                    <li>🔄 Synchronisation auto</li>
+                    <li>🔍 Recherche client</li>
+                    <li>💾 Hors ligne</li>
+                </ul>
+                <button class="app-button">
+                    <i class="fas fa-arrow-right"></i> Ouvrir App
+                </button>
+            </a>
+        </div>
+
+        <div class="file-info">
+            <h3><i class="fas fa-folder"></i> Fichiers inclus</h3>
+            <div class="file-list">
+                <div class="file-item">📄 index.html</div>
+                <div class="file-item">🎨 styles.css</div>
+                <div class="file-item">⚙️ app.js</div>
+                <div class="file-item">📱 proassistant.html</div>
+                <div class="file-item">🎨 proassistant.css</div>
+                <div class="file-item">⚙️ proassistant.js</div>
+                <div class="file-item">📖 README.md</div>
+                <div class="file-item">🚀 GUIDE_DEMARRAGE.md</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>💡 Conseil : Consultez <a href="GUIDE_DEMARRAGE.md">GUIDE_DEMARRAGE.md</a> pour bien démarrer</p>
+            <p style="margin-top: 16px; font-size: 12px; opacity: 0.8;">Aucun serveur requis • Données 100% locales • Entièrement gratuit</p>
+        </div>
+    </div>
+</body>
+</html>

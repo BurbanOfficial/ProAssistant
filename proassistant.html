@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProAssistant - Enregistrement rapide</title>
+    <link rel="stylesheet" href="proassistant.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Écran de sélection du client -->
+        <div id="client-selection-screen" class="screen active">
+            <div class="container">
+                <div class="header">
+                    <div class="logo">
+                        <i class="fas fa-hands-helping"></i>
+                        <span>ProAssistant</span>
+                    </div>
+                    <p class="subtitle">Enregistrement rapide d'intervention</p>
+                </div>
+
+                <div class="content">
+                    <h2>Sélectionner un client</h2>
+                    
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="client-search" placeholder="Rechercher un client...">
+                    </div>
+
+                    <div class="clients-list" id="clients-list">
+                        <p class="empty-state">Aucun client disponible</p>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-secondary" onclick="app.openCMSWindow()">
+                            <i class="fas fa-cog"></i> Gérer les clients (CMS)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p class="version">ProAssistant v1.0 - Mode terrain</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran d'enregistrement des heures -->
+        <div id="hours-entry-screen" class="screen">
+            <div class="container">
+                <div class="header compact">
+                    <button class="back-btn" onclick="app.goBackToClients()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h3 id="selected-client-name">Client</h3>
+                    <div></div>
+                </div>
+
+                <div class="content">
+                    <div class="date-time-display">
+                        <div class="date-box">
+                            <i class="fas fa-calendar"></i>
+                            <div>
+                                <p class="label">Date</p>
+                                <p class="value" id="display-date">—</p>
+                            </div>
+                        </div>
+                        <div class="time-box">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <p class="label">Heure</p>
+                                <p class="value" id="display-time">—</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form class="hours-form" onsubmit="app.submitHours(event)">
+                        <div class="form-group">
+                            <label for="hours-input">Nombre d'heures effectuées</label>
+                            <div class="hours-input-wrapper">
+                                <button type="button" class="btn-minus" onclick="app.decreaseHours()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input 
+                                    type="number" 
+                                    id="hours-input" 
+                                    min="0.5" 
+                                    max="12" 
+                                    step="0.5" 
+                                    value="1" 
+                                    class="hours-input"
+                                    required
+                                >
+                                <span class="hours-label">h</span>
+                                <button type="button" class="btn-plus" onclick="app.increaseHours()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <p class="help-text">Glissez ou utilisez les boutons pour ajuster</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="service-type">Type de prestation</label>
+                            <select id="service-type" class="form-input">
+                                <option value="menage">Ménage</option>
+                                <option value="courses">Courses</option>
+                                <option value="gardiennage">Gardiennage</option>
+                                <option value="accompagnement">Accompagnement</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes (optionnel)</label>
+                            <textarea id="notes" class="form-input" rows="3" placeholder="Détails de l'intervention..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="start-time">Heure de début</label>
+                            <input type="time" id="start-time" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="end-time">Heure de fin</label>
+                            <input type="time" id="end-time" class="form-input" required>
+                        </div>
+
+                        <div class="summary-box">
+                            <div class="summary-item">
+                                <span>Montant estimé :</span>
+                                <strong id="estimated-amount">0€</strong>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn btn-secondary" onclick="app.goBackToClients()">
+                                Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> Enregistrer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Écran de confirmation -->
+        <div id="confirmation-screen" class="screen">
+            <div class="container">
+                <div class="header">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+
+                <div class="content">
+                    <h2>Intervention enregistrée !</h2>
+                    
+                    <div class="confirmation-details">
+                        <div class="detail-row">
+                            <span class="label">Client :</span>
+                            <span class="value" id="confirm-client">—</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Date :</span>
+                            <span class="value" id="confirm-date">—</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Heures :</span>
+                            <span class="value" id="confirm-hours">—</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Montant :</span>
+                            <span class="value" id="confirm-amount">—</span>
+                        </div>
+                    </div>
+
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="app.newIntervention()">
+                            <i class="fas fa-plus"></i> Nouvelle intervention
+                        </button>
+                        <button class="btn btn-secondary" onclick="app.goBackToClients()">
+                            Revenir aux clients
+                        </button>
+                        <button class="btn btn-outline" onclick="app.openCMSWindow()">
+                            <i class="fas fa-chart-line"></i> Voir le CMS
+                        </button>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>Données synchronisées automatiquement</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="proassistant.js"></script>
+</body>
+</html>
