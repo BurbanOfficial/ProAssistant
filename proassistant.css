@@ -115,6 +115,7 @@ body {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: var(--white);
     text-align: center;
+    flex-shrink: 0;
 }
 
 .header.compact {

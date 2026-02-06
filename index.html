@@ -6,6 +6,11 @@
     <title>ProAssistant - Gestion Simple pour Professionnels</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -370,6 +375,10 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>Date d'échéance mensuelle (jour du mois pour SMS)</label>
+                    <input type="number" id="client-deadline-day" class="form-input" min="1" max="31" placeholder="Ex: 5 pour le 5 de chaque mois">
+                </div>
+                <div class="form-group">
                     <label>Notes internes</label>
                     <textarea id="client-notes" class="form-input" rows="3"></textarea>
                 </div>
@@ -515,6 +524,10 @@
                             <label>Type de prestation</label>
                             <p id="detail-service-type"></p>
                         </div>
+                        <div>
+                            <label>Échéance mensuelle</label>
+                            <p id="detail-deadline-day"></p>
+                        </div>
                     </div>
                 </div>
 
@@ -650,6 +663,10 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>Date d'échéance mensuelle (jour du mois pour SMS)</label>
+                    <input type="number" id="edit-client-deadline-day" class="form-input" min="1" max="31" placeholder="Ex: 5 pour le 5 de chaque mois">
+                </div>
+                <div class="form-group">
                     <label>Notes internes</label>
                     <textarea id="edit-client-notes" class="form-input" rows="3"></textarea>
                 </div>
@@ -664,6 +681,9 @@
     <!-- Overlay -->
     <div id="modal-overlay" class="modal-overlay" onclick="app.closeModal()"></div>
 
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

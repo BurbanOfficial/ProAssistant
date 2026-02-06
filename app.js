@@ -21,11 +21,29 @@ class ProAssistantApp {
     /**
      * Initialisation de l'application
      */
-    init() {
-        this.loadData();
+    async init() {
+        // Attendre que Firebase soit initialisé
+        await this.waitForFirebase();
         this.setupEventListeners();
         this.renderDashboard();
         this.updateNotifications();
+    }
+
+    /**
+     * Attendre l'initialisation de Firebase
+     */
+    async waitForFirebase() {
+        let retries = 0;
+        while (!firebaseService || !firebaseService.userId) {
+            if (retries > 50) { // 5 secondes max
+                console.warn('Firebase non disponible, utilisant localStorage');
+                this.loadData();
+                return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+            retries++;
+        }
+        console.log('✅ Firebase prêt');
     }
 
     /**
@@ -565,23 +583,36 @@ class ProAssistantApp {
         event.preventDefault();
 
         const client = {
-            id: this.generateId(),
             name: document.getElementById('client-name').value,
             phone: document.getElementById('client-phone').value,
             email: document.getElementById('client-email').value,
             address: document.getElementById('client-address').value,
             rate: parseFloat(document.getElementById('client-rate').value),
             serviceType: document.getElementById('client-service-type').value,
-            notes: document.getElementById('client-notes').value,
-            createdAt: new Date().toISOString()
+            deadlineDay: parseInt(document.getElementById('client-deadline-day').value) || null,
+            notes: document.getElementById('client-notes').value
         };
 
-        this.clients.push(client);
-        this.saveData();
-        this.closeModal();
-        this.renderClients();
-        this.showNotification('Client ajouté avec succès', 'success');
-        this.populateClientSelect();
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Ajouter via Firebase
+            firebaseService.addClient(client).then(clientId => {
+                if (clientId) {
+                    this.closeModal();
+                    this.showNotification('Client ajouté avec succès', 'success');
+                    this.populateClientSelect();
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            client.id = this.generateId();
+            client.createdAt = new Date().toISOString();
+            this.clients.push(client);
+            this.saveData();
+            this.closeModal();
+            this.renderClients();
+            this.showNotification('Client ajouté avec succès', 'success');
+            this.populateClientSelect();
+        }
     }
 
     /**
@@ -602,6 +633,8 @@ class ProAssistantApp {
         document.getElementById('detail-address').textContent = client.address || '—';
         document.getElementById('detail-rate').textContent = client.rate.toFixed(2) + '€/h';
         document.getElementById('detail-service-type').textContent = client.serviceType;
+        const deadlineText = client.deadlineDay ? `Jour ${client.deadlineDay} de chaque mois` : '—';
+        document.getElementById('detail-deadline-day').textContent = deadlineText;
         document.getElementById('detail-notes').textContent = client.notes || '—';
 
         const stats = this.getClientStats(clientId);
@@ -636,10 +669,18 @@ class ProAssistantApp {
         document.getElementById('edit-client-address').value = client.address || '';
         document.getElementById('edit-client-rate').value = client.rate;
         document.getElementById('edit-client-service-type').value = client.serviceType;
+        document.getElementById('edit-client-deadline-day').value = client.deadlineDay || '';
         document.getElementById('edit-client-notes').value = client.notes || '';
 
         this.closeModal();
         this.openModal('edit-client');
+    }
+
+    /**
+     * Alias pour openClientForEdit (appelé depuis le modal détails)
+     */
+    editClient(clientId) {
+        this.openClientForEdit(clientId);
     }
 
     /**
@@ -649,21 +690,35 @@ class ProAssistantApp {
         event.preventDefault();
 
         const clientId = document.getElementById('edit-client-id').value;
-        const client = this.getClient(clientId);
+        const updatedData = {
+            name: document.getElementById('edit-client-name').value,
+            phone: document.getElementById('edit-client-phone').value,
+            email: document.getElementById('edit-client-email').value,
+            address: document.getElementById('edit-client-address').value,
+            rate: parseFloat(document.getElementById('edit-client-rate').value),
+            serviceType: document.getElementById('edit-client-service-type').value,
+            deadlineDay: parseInt(document.getElementById('edit-client-deadline-day').value) || null,
+            notes: document.getElementById('edit-client-notes').value
+        };
 
-        if (client) {
-            client.name = document.getElementById('edit-client-name').value;
-            client.phone = document.getElementById('edit-client-phone').value;
-            client.email = document.getElementById('edit-client-email').value;
-            client.address = document.getElementById('edit-client-address').value;
-            client.rate = parseFloat(document.getElementById('edit-client-rate').value);
-            client.serviceType = document.getElementById('edit-client-service-type').value;
-            client.notes = document.getElementById('edit-client-notes').value;
-
-            this.saveData();
-            this.closeModal();
-            this.renderClients();
-            this.showNotification('Client modifié avec succès', 'success');
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Mettre à jour via Firebase
+            firebaseService.updateClient(clientId, updatedData).then(success => {
+                if (success) {
+                    this.closeModal();
+                    this.showNotification('Client modifié avec succès', 'success');
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            const client = this.getClient(clientId);
+            if (client) {
+                Object.assign(client, updatedData);
+                this.saveData();
+                this.closeModal();
+                this.renderClients();
+                this.showNotification('Client modifié avec succès', 'success');
+            }
         }
     }
 
@@ -675,11 +730,23 @@ class ProAssistantApp {
             return;
         }
 
-        this.clients = this.clients.filter(c => c.id !== clientId);
-        this.saveData();
-        this.closeModal();
-        this.renderClients();
-        this.showNotification('Client supprimé', 'success');
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Supprimer via Firebase
+            firebaseService.deleteClient(clientId).then(success => {
+                if (success) {
+                    this.closeModal();
+                    this.renderClients();
+                    this.showNotification('Client supprimé', 'success');
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            this.clients = this.clients.filter(c => c.id !== clientId);
+            this.saveData();
+            this.closeModal();
+            this.renderClients();
+            this.showNotification('Client supprimé', 'success');
+        }
     }
 
     /**
@@ -689,14 +756,12 @@ class ProAssistantApp {
         event.preventDefault();
 
         const intervention = {
-            id: this.generateId(),
             clientId: document.getElementById('intervention-client').value,
             date: document.getElementById('intervention-date').value,
             start: document.getElementById('intervention-start').value,
             end: document.getElementById('intervention-end').value,
             type: document.getElementById('intervention-type').value,
-            notes: document.getElementById('intervention-notes').value,
-            createdAt: new Date().toISOString()
+            notes: document.getElementById('intervention-notes').value
         };
 
         // Validation
@@ -705,16 +770,27 @@ class ProAssistantApp {
             return;
         }
 
-        this.interventions.push(intervention);
-        this.saveData();
-        this.closeModal();
-
-        // Réinitialiser le formulaire
-        document.querySelector('#add-intervention .modal-form').reset();
-
-        this.showNotification('Intervention ajoutée', 'success');
-        this.renderDashboard();
-        this.renderCalendar();
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Ajouter via Firebase
+            firebaseService.addIntervention(intervention).then(interventionId => {
+                if (interventionId) {
+                    this.closeModal();
+                    document.querySelector('#add-intervention .modal-form').reset();
+                    this.showNotification('Intervention ajoutée', 'success');
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            intervention.id = this.generateId();
+            intervention.createdAt = new Date().toISOString();
+            this.interventions.push(intervention);
+            this.saveData();
+            this.closeModal();
+            document.querySelector('#add-intervention .modal-form').reset();
+            this.showNotification('Intervention ajoutée', 'success');
+            this.renderDashboard();
+            this.renderCalendar();
+        }
     }
 
     /**
@@ -742,28 +818,39 @@ class ProAssistantApp {
         event.preventDefault();
 
         const interventionId = document.getElementById('edit-intervention-id').value;
-        const intervention = this.interventions.find(i => i.id === interventionId);
+        const newStart = document.getElementById('edit-intervention-start').value;
+        const newEnd = document.getElementById('edit-intervention-end').value;
 
-        if (intervention) {
-            const newStart = document.getElementById('edit-intervention-start').value;
-            const newEnd = document.getElementById('edit-intervention-end').value;
+        if (newStart >= newEnd) {
+            this.showNotification('L\'heure de fin doit être après l\'heure de début', 'error');
+            return;
+        }
 
-            if (newStart >= newEnd) {
-                this.showNotification('L\'heure de fin doit être après l\'heure de début', 'error');
-                return;
+        const updatedData = {
+            date: document.getElementById('edit-intervention-date').value,
+            start: newStart,
+            end: newEnd,
+            type: document.getElementById('edit-intervention-type').value,
+            notes: document.getElementById('edit-intervention-notes').value
+        };
+
+        if (firebaseService && firebaseService.isAuthenticated) {
+            firebaseService.updateIntervention(interventionId, updatedData).then(success => {
+                if (success) {
+                    this.closeModal();
+                    this.showNotification('Intervention modifiée', 'success');
+                }
+            });
+        } else {
+            const intervention = this.interventions.find(i => i.id === interventionId);
+            if (intervention) {
+                Object.assign(intervention, updatedData);
+                this.saveData();
+                this.closeModal();
+                this.showNotification('Intervention modifiée', 'success');
+                this.renderDashboard();
+                this.renderCalendar();
             }
-
-            intervention.date = document.getElementById('edit-intervention-date').value;
-            intervention.start = newStart;
-            intervention.end = newEnd;
-            intervention.type = document.getElementById('edit-intervention-type').value;
-            intervention.notes = document.getElementById('edit-intervention-notes').value;
-
-            this.saveData();
-            this.closeModal();
-            this.showNotification('Intervention modifiée', 'success');
-            this.renderDashboard();
-            this.renderCalendar();
         }
     }
 
@@ -775,11 +862,19 @@ class ProAssistantApp {
             return;
         }
 
-        this.interventions = this.interventions.filter(i => i.id !== interventionId);
-        this.saveData();
-        this.showNotification('Intervention supprimée', 'success');
-        this.renderDashboard();
-        this.renderCalendar();
+        if (firebaseService && firebaseService.isAuthenticated) {
+            firebaseService.deleteIntervention(interventionId).then(success => {
+                if (success) {
+                    this.showNotification('Intervention supprimée', 'success');
+                }
+            });
+        } else {
+            this.interventions = this.interventions.filter(i => i.id !== interventionId);
+            this.saveData();
+            this.showNotification('Intervention supprimée', 'success');
+            this.renderDashboard();
+            this.renderCalendar();
+        }
     }
 
     /**
@@ -1224,33 +1319,62 @@ Professionnel de l'aide à la personne
      * Persistance des données
      */
     saveData() {
-        const data = {
-            clients: this.clients,
-            interventions: this.interventions,
-            invoices: this.invoices,
-            userProfile: this.userProfile,
-            notifications: this.notifications
-        };
-        localStorage.setItem('proassistant_data', JSON.stringify(data));
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Les données sont synchronisées automatiquement par Firebase
+            console.log('💾 Données synchronisées avec Firebase');
+        } else {
+            // Fallback sur localStorage
+            const data = {
+                clients: this.clients,
+                interventions: this.interventions,
+                invoices: this.invoices,
+                userProfile: this.userProfile,
+                notifications: this.notifications
+            };
+            localStorage.setItem('proassistant_data', JSON.stringify(data));
+        }
     }
 
     loadData() {
-        const stored = localStorage.getItem('proassistant_data');
-        if (stored) {
-            try {
-                const data = JSON.parse(stored);
-                this.clients = data.clients || [];
-                this.interventions = data.interventions || [];
-                this.invoices = data.invoices || [];
-                this.userProfile = data.userProfile || {};
-                this.notifications = data.notifications || [];
-            } catch (error) {
-                console.error('Erreur lors du chargement des données:', error);
+        // Les données sont chargées automatiquement par les écouteurs Firebase
+        // Cette fonction est conservée pour la rétrocompatibilité
+        if (!firebaseService || !firebaseService.isAuthenticated) {
+            // Fallback sur localStorage si Firebase n'est pas disponible
+            const stored = localStorage.getItem('proassistant_data');
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    this.clients = data.clients || [];
+                    this.interventions = data.interventions || [];
+                    this.invoices = data.invoices || [];
+                    this.userProfile = data.userProfile || {};
+                    this.notifications = data.notifications || [];
+                } catch (error) {
+                    console.error('Erreur lors du chargement des données:', error);
+                }
             }
         }
-
-        // Vérifier les paiements en retard
         this.updateLatePayments();
+    }
+
+    /**
+     * Sauvegarder les données en Firebase
+     */
+    async saveData() {
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Les données sont synchronisées automatiquement par Firebase
+            console.log('💾 Données synchronisées avec Firebase');
+        } else {
+            // Fallback sur localStorage
+            const data = {
+                clients: this.clients,
+                interventions: this.interventions,
+                invoices: this.invoices,
+                userProfile: this.userProfile,
+                notifications: this.notifications
+            };
+            localStorage.setItem('proassistant_data', JSON.stringify(data));
+        }
     }
 
     /**

@@ -6,6 +6,11 @@
     <title>ProAssistant - Enregistrement rapide</title>
     <link rel="stylesheet" href="proassistant.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
 </head>
 <body>
     <div class="app">
@@ -33,8 +38,8 @@
                     </div>
 
                     <div class="actions">
-                        <button class="btn btn-secondary" onclick="app.openCMSWindow()">
-                            <i class="fas fa-cog"></i> Gérer les clients (CMS)
+                        <button class="btn btn-primary" onclick="app.openAddClientModal()">
+                            <i class="fas fa-user-plus"></i> Ajouter un client rapide
                         </button>
                     </div>
                 </div>
@@ -145,6 +150,68 @@
             </div>
         </div>
 
+        <!-- Écran d'ajout rapide de client -->
+        <div id="add-client-screen" class="screen">
+            <div class="container">
+                <div class="header compact">
+                    <button class="back-btn" onclick="app.goBackToClients()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h3>Nouveau client</h3>
+                    <div></div>
+                </div>
+
+                <div class="content">
+                    <form class="add-client-form" onsubmit="app.submitNewClient(event)">
+                        <div class="form-group">
+                            <label for="new-client-name">Nom du client *</label>
+                            <input type="text" id="new-client-name" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-client-phone">Téléphone *</label>
+                            <input type="tel" id="new-client-phone" class="form-input" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-client-rate">Tarif horaire (€) *</label>
+                            <input type="number" id="new-client-rate" class="form-input" step="0.01" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-client-service">Type de prestation</label>
+                            <select id="new-client-service" class="form-input">
+                                <option value="menage">Ménage</option>
+                                <option value="courses">Courses</option>
+                                <option value="gardiennage">Gardiennage</option>
+                                <option value="accompagnement">Accompagnement</option>
+                                <option value="autre">Autre</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-client-email">Email (optionnel)</label>
+                            <input type="email" id="new-client-email" class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-client-deadline">Échéance mensuelle (jour du mois)</label>
+                            <input type="number" id="new-client-deadline" class="form-input" min="1" max="31" placeholder="Ex: 5">
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn btn-secondary" onclick="app.goBackToClients()">
+                                Annuler
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Ajouter le client
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Écran de confirmation -->
         <div id="confirmation-screen" class="screen">
             <div class="container">
@@ -196,6 +263,9 @@
         </div>
     </div>
 
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
     <script src="proassistant.js"></script>
 </body>
 </html>

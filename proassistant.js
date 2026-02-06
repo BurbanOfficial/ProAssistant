@@ -262,21 +262,40 @@ class TerrainApp {
      * Ajouter l'intervention au CMS
      */
     addInterventionToCMS(intervention) {
-        try {
-            const stored = localStorage.getItem('proassistant_data');
-            let data = stored ? JSON.parse(stored) : {};
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Ajouter via Firebase
+            const interventionData = {
+                clientId: intervention.clientId,
+                date: intervention.date,
+                start: intervention.start,
+                end: intervention.end,
+                type: intervention.type,
+                notes: intervention.notes
+            };
+            
+            firebaseService.addIntervention(interventionData).then(id => {
+                if (id) {
+                    console.log('✅ Intervention enregistrée dans Firebase');
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            try {
+                const stored = localStorage.getItem('proassistant_data');
+                let data = stored ? JSON.parse(stored) : {};
 
-            if (!data.interventions) {
-                data.interventions = [];
+                if (!data.interventions) {
+                    data.interventions = [];
+                }
+
+                data.interventions.push(intervention);
+                localStorage.setItem('proassistant_data', JSON.stringify(data));
+
+                this.showNotification('Intervention enregistrée dans le CMS', 'success');
+            } catch (error) {
+                console.error('Erreur lors de l\'ajout de l\'intervention:', error);
+                this.showNotification('Erreur lors de l\'enregistrement', 'error');
             }
-
-            data.interventions.push(intervention);
-            localStorage.setItem('proassistant_data', JSON.stringify(data));
-
-            this.showNotification('Intervention enregistrée dans le CMS', 'success');
-        } catch (error) {
-            console.error('Erreur lors de l\'ajout de l\'intervention:', error);
-            this.showNotification('Erreur lors de l\'enregistrement', 'error');
         }
     }
 
@@ -325,6 +344,105 @@ class TerrainApp {
         this.showScreen('client-selection-screen');
         document.getElementById('client-search').value = '';
         this.renderClientsList();
+    }
+
+    /**
+     * Ouvrir le formulaire d'ajout rapide de client
+     */
+    openAddClientModal() {
+        this.showScreen('add-client-screen');
+        // Réinitialiser le formulaire
+        document.getElementById('new-client-name').value = '';
+        document.getElementById('new-client-phone').value = '';
+        document.getElementById('new-client-rate').value = '';
+        document.getElementById('new-client-service').value = 'menage';
+        document.getElementById('new-client-email').value = '';
+        document.getElementById('new-client-deadline').value = '';
+    }
+
+    /**
+     * Soumettre un nouveau client rapidement
+     */
+    submitNewClient(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('new-client-name').value.trim();
+        const phone = document.getElementById('new-client-phone').value.trim();
+        const rate = parseFloat(document.getElementById('new-client-rate').value);
+        const service = document.getElementById('new-client-service').value;
+        const email = document.getElementById('new-client-email').value.trim();
+        const deadline = parseInt(document.getElementById('new-client-deadline').value) || null;
+
+        if (!name || !phone || !rate) {
+            this.showNotification('Veuillez remplir tous les champs requis', 'error');
+            return;
+        }
+
+        const newClient = {
+            name: name,
+            phone: phone,
+            email: email || '',
+            address: '',
+            rate: rate,
+            serviceType: service,
+            deadlineDay: deadline,
+            notes: 'Client ajouté via l\'application terrain'
+        };
+
+        if (firebaseService && firebaseService.isAuthenticated) {
+            // Ajouter via Firebase
+            firebaseService.addClient(newClient).then(clientId => {
+                if (clientId) {
+                    this.showNotification(`Client "${name}" ajouté avec succès !`, 'success');
+                    this.goBackToClients();
+                    // Attendre le chargement et sélectionner le client
+                    setTimeout(() => {
+                        const client = this.clients.find(c => c.name === name && c.phone === phone);
+                        if (client) {
+                            this.selectClient(client.id);
+                        }
+                    }, 500);
+                }
+            });
+        } else {
+            // Fallback sur localStorage
+            let data = {
+                clients: [],
+                interventions: [],
+                invoices: [],
+                userProfile: {}
+            };
+
+            try {
+                const stored = localStorage.getItem('proassistant_data');
+                if (stored) {
+                    data = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement des données:', error);
+            }
+
+            newClient.id = this.generateId();
+            newClient.createdAt = new Date().toISOString();
+
+            if (!data.clients) {
+                data.clients = [];
+            }
+            data.clients.push(newClient);
+
+            try {
+                localStorage.setItem('proassistant_data', JSON.stringify(data));
+                this.loadClientsFromCMS();
+                this.showNotification(`Client "${name}" ajouté avec succès !`, 'success');
+                this.goBackToClients();
+                setTimeout(() => {
+                    this.selectClient(newClient.id);
+                }, 500);
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                this.showNotification('Erreur lors de l\'ajout du client', 'error');
+            }
+        }
     }
 
     /**
